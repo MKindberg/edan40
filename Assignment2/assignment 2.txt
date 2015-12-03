@@ -1,0 +1,2 @@
+1. If I give Matches high score, mismatches high penalty and no penalty for spaces the maximium substring should be all letters that aren't matched to a space.
+2. b) it takes two elements (h1 and h2) and a list of tuples containing pairs of lists. Then it attaches h1 first in every list that's first in the tuples and h2 to all lists that are second in the tuples.
