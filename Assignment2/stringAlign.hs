@@ -18,11 +18,7 @@ sim :: (String, String) -> Int
 sim ([], []) = 0
 sim ((x:xs) ,[]) = scoreSpace + sim (xs, [])
 sim ([], (y:ys)) = scoreSpace + sim ([], ys)
-sim ((x:xs), (y:ys))
-    |x=='-' = scoreSpace + sim (xs, ys)
-    |y=='-' = scoreSpace + sim (xs, ys)
-    |x==y = scoreMatch + sim (xs, ys)
-    |otherwise = maximum [sim ('-':xs, y:ys), sim (x:xs, '-':ys), scoreMissmatch + sim (xs, ys)]
+sim ((x:xs), (y:ys)) = maximum [score x y + sim (xs, ys), score '-' y + sim (xs, ys), score x '-' + sim (xs, ys)]
 
         
 attachHeads :: a -> a -> [([a],[a])] -> [([a],[a])] 
@@ -55,7 +51,6 @@ optAlignments (x:xs) (y:ys) = maximaBy sim $ concat [ attachHeads x y (optAlignm
 outputOptAlignments :: String -> String -> IO()
 outputOptAlignments s1 s2 = do printOptAlignments $ optAlignments2 s1 s2
 
-
 printOptAlignments :: [AlignmentType] -> IO()
 
 printOptAlignments [] = putStrLn ""
@@ -76,9 +71,7 @@ sim2 (xs, ys) = simLen (length xs) (length ys)
         simEntry 0 0 = 0
         simEntry i 0 = scoreSpace + simLen (i-1) 0
         simEntry 0 j = scoreSpace + simLen 0 (j-1)
-        simEntry i j
-            |x==y = scoreMatch + simLen (i-1) (j-1)
-            |otherwise = maximum [simLen i (j-1) + scoreSpace, simLen (i-1) j + scoreSpace, simLen (i-1) (j-1) + scoreMissmatch]
+        simEntry i j = maximum [simLen i (j-1) + score x y, simLen (i-1) j + score x y, simLen (i-1) (j-1) + score x y]
             where
                 x = xs!!(i-1)
                 y = ys!!(j-1)
@@ -92,29 +85,12 @@ optAlignments2 s1 s2 = snd $ optLen (length s1) (length s2)
         
         optEntry :: Int -> Int -> (Int, [AlignmentType])
         optEntry 0 0 = (0, [([], [])])
-        optEntry 0 j = (scoreSpace + fst(optLen 0 (j-1)), attachTails '-' (s2!!(j-1)) (snd (optEntry 0 (j-1))))
-        optEntry i 0 = (scoreSpace + fst(optLen (i-1) 0), attachTails (s1!!(i-1)) '-' (snd (optEntry (i-1) 0)))        
-        optEntry i j = (fst (head f), concatMap snd f)
+        optEntry 0 j = (scoreSpace + fst (optLen 0 (j-1)), attachTails '-' (s2!!(j-1)) $ snd $ optEntry 0 (j-1))
+        optEntry i 0 = (scoreSpace + fst (optLen (i-1) 0), attachTails (s1!!(i-1)) '-' $ snd $ optEntry (i-1) 0)        
+        optEntry i j = (fst $ head f, concatMap snd f)
             where
                 x = s1!!(i-1)
                 y = s2!!(j-1)
-                f = maximaBy fst $ [(score x y + (fst (optLen (i-1) (j-1))), attachTails x y (snd (optLen (i-1) (j-1)))), 
-                    (score '-' y + (fst (optLen (i) (j-1))), attachTails '-' y (snd (optLen (i) (j-1)))), 
-                    (score x '-' + (fst (optLen (i-1) (j))), attachTails x '-' (snd (optLen (i-1) (j))))]
-
-mcsLength :: Eq a => [a] -> [a] -> Int
-mcsLength xs ys = mcsLen (length xs) (length ys)
-  where
-    mcsLen i j = mcsTable!!i!!j
-    mcsTable = [[ mcsEntry i j | j<-[0..]] | i<-[0..] ]
-       
-    mcsEntry :: Int -> Int -> Int
-    mcsEntry _ 0 = 0
-    mcsEntry 0 _ = 0
-    mcsEntry i j
-      | x == y    = 1 + mcsLen (i-1) (j-1)
-      | otherwise = max (mcsLen i (j-1)) 
-                        (mcsLen (i-1) j)
-      where
-         x = xs!!(i-1)
-         y = ys!!(j-1)
+                f = maximaBy fst $ [(score x y + (fst $ optLen (i-1) (j-1)), attachTails x y $ snd $ optLen (i-1) (j-1)), 
+                    (score '-' y + (fst $ optLen (i) (j-1)), attachTails '-' y $ snd $ optLen (i) (j-1)), 
+                    (score x '-' + (fst $ optLen (i-1) (j)), attachTails x '-' $ snd $ optLen (i-1) (j))]
