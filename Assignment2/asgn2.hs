@@ -2,6 +2,9 @@ scoreMatch = 0
 scoreMissmatch = -1
 scoreSpace= -1
 
+string1 = "aferociousmonadatemyhamster"
+string2 = "functionalprogrammingrules"
+
 score :: Char -> Char -> Int
 score x y 
     |x==y = scoreMatch
@@ -50,7 +53,7 @@ optAlignments (x:xs) (y:ys) = maximaBy sim $ concat [ attachHeads x y (optAlignm
                      
                 
 outputOptAlignments :: String -> String -> IO()
-outputOptAlignments s1 s2 = do printOptAlignments $ optAlignments s1 s2
+outputOptAlignments s1 s2 = do printOptAlignments $ optAlignments2 s1 s2
 
 
 printOptAlignments :: [AlignmentType] -> IO()
@@ -91,11 +94,14 @@ optAlignments2 s1 s2 = snd $ optLen (length s1) (length s2)
         optEntry 0 0 = (0, [([], [])])
         optEntry 0 j = (scoreSpace + fst(optLen 0 (j-1)), attachTails '-' (s2!!(j-1)) (snd (optEntry 0 (j-1))))
         optEntry i 0 = (scoreSpace + fst(optLen (i-1) 0), attachTails (s1!!(i-1)) '-' (snd (optEntry (i-1) 0)))        
-        optEntry i j = maximaBy fst [(score x y + (fst (optLen (i-1) (j-1))), attachTails x y (snd (optLen (i-1) (j-1)))), (score '-' y + (fst (optLen (i-1) j)), attachTails '-' y (snd (optLen (i-1) j))), (score x '-' + (fst (optLen i (i-1))), attachTails x '-' (snd (optLen i (j-1))))]
+        optEntry i j = (fst (head f), concatMap snd f)
             where
                 x = s1!!(i-1)
                 y = s2!!(j-1)
-            
+                f = maximaBy fst $ [(score x y + (fst (optLen (i-1) (j-1))), attachTails x y (snd (optLen (i-1) (j-1)))), 
+                    (score '-' y + (fst (optLen (i) (j-1))), attachTails '-' y (snd (optLen (i) (j-1)))), 
+                    (score x '-' + (fst (optLen (i-1) (j))), attachTails x '-' (snd (optLen (i-1) (j))))]
+
 mcsLength :: Eq a => [a] -> [a] -> Int
 mcsLength xs ys = mcsLen (length xs) (length ys)
   where
