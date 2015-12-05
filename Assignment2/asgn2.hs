@@ -36,10 +36,18 @@ optAlignments [] (y:ys) = attachHeads '-' y (optAlignments [] ys)
 optAlignments (x:xs) (y:ys) = maximaBy sim (concat [ attachHeads x y (optAlignments xs ys),
                      attachHeads x '-' (optAlignments xs (y:ys)),
                      attachHeads '-' y (optAlignments (x:xs) ys) ])
-    {-|x=='-' = attachHeads x y (maximaBy sim (optAlignments xs ys))
-    |y=='-' = attachHeads x y (maximaBy sim (optAlignments xs ys))
-    |x==y = attachHeads x y (maximaBy sim (optAlignments xs ys))
-    |maximum[sim ('-':xs, y:ys), sim (x:xs, '-':ys)]<scoreMissmatch+(sim (xs, ys)) = attachHeads x y (maximaBy sim (optAlignments xs ys))
-    |sim ('-':xs, y:ys)>sim (x:xs, '-':ys) = attachHeads x '-' (optAlignments (xs) (y:ys))
-    |otherwise = attachHeads '-' y (optAlignments (x:xs) (ys))-}
-   
+
+                     
+                
+outputOptAlignments :: String -> String -> IO()
+outputOptAlignments s1 s2 = do printOptAlignments (optAlignments s1 s2)
+
+
+printOptAlignments :: [AlignmentType] -> IO()
+
+printOptAlignments [] = putStrLn ""
+printOptAlignments (s:ss)=do
+    putStrLn ""
+    putStrLn (fst s)
+    putStrLn (snd s)
+    printOptAlignments ss
