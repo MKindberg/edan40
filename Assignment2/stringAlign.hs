@@ -10,10 +10,10 @@ string1 = "aferociousmonadatemyhamster"
 string2 = "functionalprogrammingrules"
 
 score :: Char -> Char -> Int
-score x y 
+score x '-' = scoreSpace
+score '-' y = scoreSpace
+score x y
     |x==y = scoreMatch
-    |x=='-' = scoreSpace
-    |y=='-' = scoreSpace
     |otherwise = scoreMissmatch
 
 similarityScore :: String -> String -> Int
@@ -52,11 +52,9 @@ optAlignments :: String -> String -> [AlignmentType]
 optAlignments [] [] = [([], [])]
 optAlignments (x:xs) [] = attachHeads x '-' $ optAlignments xs []
 optAlignments [] (y:ys) = attachHeads '-' y $ optAlignments [] ys
-optAlignments (x:xs) (y:ys) = maximaBy sim $ concat [ attachHeads x y (optAlignments xs ys),
-                     attachHeads x '-' (optAlignments xs (y:ys)),
-                     attachHeads '-' y (optAlignments (x:xs) ys) ]
+optAlignments (x:xs) (y:ys) = maximaBy sim $ concat [ attachHeads x y (optAlignments xs ys), attachHeads x '-' (optAlignments xs (y:ys)), attachHeads '-' y (optAlignments (x:xs) ys) ]
 
-                     
+    
 --e)                
 outputOptAlignments :: String -> String -> IO()
 outputOptAlignments s1 s2 = do printOptAlignments $ optAlignments s1 s2
