@@ -37,11 +37,34 @@ buildWrite e = Write e
 
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
+exec [] _ _ = []
 exec (If cond thenStmts elseStmts: stmts) dict input = 
     if (Expr.value cond dict)>0 
     then exec (thenStmts: stmts) dict input
     else exec (elseStmts: stmts) dict input
+    
+exec (Assignment s val:stmts) dict input = exec stmts (Dictionary.insert (s, Expr.value val dict) dict) input
+
+exec (Skip:stmts) dict input = exec stmts dict input
+
+exec (Begin s:stmts) dict input = exec (s++stmts) dict input
+
+exec (While cond s:stmts) dict input = 
+    if Expr.value cond dict > 0
+    then exec (s:While cond s:stmts) dict input  
+    else exec stmts dict input
+    
+exec (Read s:stmts) dict (i:input) = exec stmts (Dictionary.insert (s, i) dict) input
+
+exec (Write e:stmts) dict input = Expr.value e dict : exec stmts dict input
 
 instance Parse Statement where
   parse = assignment ! ifState ! skip ! beginEnd ! whileDo ! readState ! write
-  toString = error "Statement.toString not implemented"
+  
+  toString (Assignment s e) = s ++ " := " ++ Expr.toString e ++ ";\n"
+  toString (If e s1 s2) = "if " ++ Expr.toString e ++ " then \n" ++ toString s1 ++ "else \n" ++ toString s2
+  toString Skip = "skip; \n"
+  toString (Begin ss) = "begin \n" ++ concat (map toString ss ) ++ "end \n"
+  toString (While e s) = "while " ++ Expr.toString e ++ " do \n" ++ toString s
+  toString (Read s) = "read " ++ s ++ ";\n"
+  toString (Write e) = "write " ++ Expr.toString e ++ ";\n"

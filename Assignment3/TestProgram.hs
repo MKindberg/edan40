@@ -4,6 +4,7 @@ module TestProgram where
 import Program
 p, p1 :: Program.T
 p = fromString  ("\
+\a := 1;\
 \read k;\
 \read n;\
 \m := 1;\
