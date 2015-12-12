@@ -169,5 +169,4 @@ transformationApply w f s t = mmap ((substitute w (snd t)) . f) $ match w (fst t
 -- Applying a list of patterns until one succeeds
 transformationsApply :: Eq a => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Maybe [a]
 {- DONE -}
-transformationsApply _ _ [] _ = Nothing
-transformationsApply w f (t:ts) s =orElse (transformationApply w f s t ) (transformationsApply w f ts s)
+transformationsApply w f t s = foldr1 orElse $ map (transformationApply w f s) t
